@@ -1,6 +1,4 @@
 -- Professional Fly GUI (Delta Compatible)
--- Keeps the same working display but adds Hide/Unhide + Speed Control
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -59,7 +57,7 @@ SpeedLabel.Font = Enum.Font.Gotham
 SpeedLabel.TextSize = 14
 SpeedLabel.Parent = Frame
 
--- Increase Speed Button
+-- Plus & Minus Buttons
 local PlusButton = Instance.new("TextButton")
 PlusButton.Size = UDim2.new(0, 95, 0, 30)
 PlusButton.Position = UDim2.new(0, 10, 0, 105)
@@ -70,7 +68,6 @@ PlusButton.Font = Enum.Font.Gotham
 PlusButton.TextSize = 14
 PlusButton.Parent = Frame
 
--- Decrease Speed Button
 local MinusButton = Instance.new("TextButton")
 MinusButton.Size = UDim2.new(0, 95, 0, 30)
 MinusButton.Position = UDim2.new(0, 115, 0, 105)
@@ -81,7 +78,7 @@ MinusButton.Font = Enum.Font.Gotham
 MinusButton.TextSize = 14
 MinusButton.Parent = Frame
 
--- Hide Button
+-- Hide/Unhide Button
 local HideButton = Instance.new("TextButton")
 HideButton.Size = UDim2.new(0, 200, 0, 30)
 HideButton.Position = UDim2.new(0, 10, 0, 145)
@@ -95,48 +92,37 @@ HideButton.Parent = Frame
 -- Fly System
 local flying = false
 local speed = 3
-local HumanoidRootPart = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+local HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 
-local function flyLoop()
-    RunService.RenderStepped:Connect(function()
-        if flying then
-            local moveDirection = Vector3.new()
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                moveDirection += workspace.CurrentCamera.CFrame.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                moveDirection -= workspace.CurrentCamera.CFrame.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                moveDirection -= workspace.CurrentCamera.CFrame.RightVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                moveDirection += workspace.CurrentCamera.CFrame.RightVector
-            end
-            HumanoidRootPart.Velocity = moveDirection * speed * 10
-        end
-    end)
-end
+-- Single RenderStepped Loop (prevents multiple loops)
+RunService.RenderStepped:Connect(function()
+    if flying then
+        local dir = Vector3.new()
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += workspace.CurrentCamera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= workspace.CurrentCamera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= workspace.CurrentCamera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += workspace.CurrentCamera.CFrame.RightVector end
+        HRP.Velocity = dir * speed * 10
+    end
+end)
 
 -- Button Connections
 FlyButton.MouseButton1Click:Connect(function()
     flying = not flying
     FlyButton.Text = flying and "Flying..." or "Toggle Fly"
-    if flying then
-        flyLoop()
-    else
-        HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+    if not flying then
+        HRP.Velocity = Vector3.new(0,0,0)
     end
 end)
 
 PlusButton.MouseButton1Click:Connect(function()
-    speed = speed + 1
+    speed += 1
     SpeedLabel.Text = "Speed: " .. speed
 end)
 
 MinusButton.MouseButton1Click:Connect(function()
     if speed > 1 then
-        speed = speed - 1
+        speed -= 1
         SpeedLabel.Text = "Speed: " .. speed
     end
 end)
